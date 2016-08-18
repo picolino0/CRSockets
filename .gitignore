@@ -1,0 +1,8 @@
+# Ignore jetbrains folders
+.idea
+
+# Settings file
+*.iml
+
+# Build folder
+out
