@@ -30,7 +30,7 @@ public class Main {
         AnotherEvent evt = new AnotherEvent("Second event", 42);
         manager.callEvent(evt);
 
-        // Check if the additional method was called in addition to the other methods (because AnotherEvent is a subclass of SomeEvent)
+        // Check if the new method was called in addition to the other methods (because AnotherEvent is a subclass of SomeEvent)
         Assert.assertEquals(true, evt.wasCalled());
         Assert.assertEquals(5, evt.getCalled());
     }

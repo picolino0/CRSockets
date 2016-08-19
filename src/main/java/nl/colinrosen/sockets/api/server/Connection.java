@@ -9,13 +9,13 @@ import java.util.UUID;
 public interface Connection {
 
     /**
-     * The unique id of the connection.
+     * The unique id of the client.
      * Automatically generated
      */
     UUID getID();
 
     /**
-     * Whether the connection is opened or not
+     * Whether the client is opened or not
      */
     boolean isConnected();
 
@@ -27,14 +27,14 @@ public interface Connection {
     void sendRaw(String message);
 
     /**
-     * Close the connection
+     * Close the client
      */
     void close();
 
     /**
-     * Close the connection with the given reason
+     * Close the client with the given reason
      *
-     * @param reason The reason for closing the connection
+     * @param reason The reason for closing the client
      */
     void close(String reason);
 
@@ -44,19 +44,19 @@ public interface Connection {
     int getPing();
 
     /**
-     * If the specified amount of time passes without receiving an object over TCP, the connection is considered closed
+     * If the specified amount of time passes without receiving an object over TCP, the client is considered closed
      */
     long getTimeout();
 
     /**
      * Sets the timeout time (see {@link #getTimeout() getTimeout()})
      *
-     * @param time
+     * @param time the amount of milliseconds the connection is allowed to be inactive
      */
     void setTimeout(long time);
 
     /**
-     * The InetSocketAddress of the connection
+     * The InetSocketAddress of the client
      */
     InetSocketAddress getAddress();
 }
