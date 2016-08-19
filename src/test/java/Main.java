@@ -12,7 +12,7 @@ import org.junit.Test;
  * @author Colin Rosen
  */
 public class Main {
-    Server serv = ServerFactory.newServerInstance();
+    Server serv = ServerFactory.newServerInstance(2585);
 
     @Test
     public void doEventTest() {

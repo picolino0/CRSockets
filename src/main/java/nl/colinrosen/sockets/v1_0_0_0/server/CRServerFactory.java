@@ -7,7 +7,7 @@ import nl.colinrosen.sockets.api.server.ServerFactory;
  * @author Colin Rosen
  */
 public class CRServerFactory extends ServerFactory {
-    public Server newServer() {
-        return new CRServer();
+    public Server newServer(int port) {
+        return new CRServer(port);
     }
 }

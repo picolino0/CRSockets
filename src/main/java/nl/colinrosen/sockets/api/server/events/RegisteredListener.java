@@ -11,4 +11,6 @@ public interface RegisteredListener {
     EventPriority getPriority();
 
     EventListener getListener();
+
+    Server getServer();
 }

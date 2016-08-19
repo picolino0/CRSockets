@@ -13,7 +13,7 @@ import java.lang.reflect.Method;
 /**
  * @author Colin Rosen
  */
-class CRRegisteredListener implements RegisteredListener {
+public class CRRegisteredListener implements RegisteredListener {
     private EventPriority priority;
     private EventListener listener;
     private Method method;
@@ -47,5 +47,9 @@ class CRRegisteredListener implements RegisteredListener {
 
     public EventListener getListener() {
         return listener;
+    }
+
+    public Server getServer(){
+        return server;
     }
 }

@@ -1,5 +1,6 @@
 package nl.colinrosen.sockets.v1_0_0_0.server.events;
 
+import nl.colinrosen.sockets.api.server.Server;
 import nl.colinrosen.sockets.api.server.events.EventListener;
 import nl.colinrosen.sockets.api.server.events.EventPriority;
 import nl.colinrosen.sockets.api.server.events.HandlerList;
@@ -83,6 +84,18 @@ public class CRHandlerList implements HandlerList {
                     list.handlerSlots.values().forEach(List::clear);
                     list.handlers = null;
                 }
+        }
+    }
+
+    public static void unregisterAll(Server server) {
+        synchronized (allLists) {
+            for (HandlerList list : allLists) {
+                RegisteredListener[] listeners = list.getHandlers();
+                for (RegisteredListener listener : listeners) {
+                    if (listener.getServer().equals(server))
+                        list.unregister(listener);
+                }
+            }
         }
     }
 

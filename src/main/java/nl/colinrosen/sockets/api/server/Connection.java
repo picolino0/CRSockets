@@ -59,4 +59,9 @@ public interface Connection {
      * The InetSocketAddress of the client
      */
     InetSocketAddress getAddress();
+
+    /**
+     * Gets the server to which this connection belongs
+     */
+    Server getServer();
 }
