@@ -1,5 +1,7 @@
 package nl.colinrosen.sockets.api.server;
 
+import nl.colinrosen.sockets.api.server.packets.outgoing.PacketOut;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -22,11 +24,20 @@ public interface Connection {
     boolean isConnected();
 
     /**
-     * Sends a string directly to the client
+     * Sends a packet to the client
      *
-     * @param message The message to be sent
+     * @param pack The packet to send
+     * @throws IOException if an I/O error occurs when sending the packet
      */
-    void sendRaw(String message) throws IOException;
+    void sendPacket(PacketOut pack) throws IOException;
+
+    /**
+     * Send a notification to the client
+     *
+     * @param notification The name of the notification to send
+     * @throws IOException if an I/O error occurs when sending the message
+     */
+    void sendNotification(String notification) throws IOException;
 
     /**
      * Close the client

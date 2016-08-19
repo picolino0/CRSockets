@@ -5,6 +5,8 @@ import nl.colinrosen.sockets.api.server.packets.outgoing.PacketOut;
 
 import java.io.IOException;
 import java.net.SocketException;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * @author Colin Rosen
@@ -36,7 +38,7 @@ public interface Server {
      *
      * @param packet The packet to be sent
      */
-    void broadcast(PacketOut packet);
+    void broadcast(PacketOut packet) throws IOException;
 
     /**
      * Gets the EventManager associated with this server
@@ -47,4 +49,21 @@ public interface Server {
      * Gets the port the server is running on
      */
     int getPort();
+
+    /**
+     * @return If the server has started and is currently still running
+     */
+    boolean isRunning();
+
+    /**
+     * Gets the connection with the given uuid
+     *
+     * @param uuid The unique id of a connection
+     */
+    Connection getConnection(UUID uuid);
+
+    /**
+     * Gets a list of all connections
+     */
+    List<Connection> getConnections();
 }

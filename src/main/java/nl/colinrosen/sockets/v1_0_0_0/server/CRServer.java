@@ -1,5 +1,6 @@
 package nl.colinrosen.sockets.v1_0_0_0.server;
 
+import nl.colinrosen.sockets.api.server.Connection;
 import nl.colinrosen.sockets.api.server.Server;
 import nl.colinrosen.sockets.api.server.events.EventManager;
 import nl.colinrosen.sockets.api.server.packets.outgoing.PacketOut;
@@ -11,6 +12,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * @author Colin Rosen
@@ -21,6 +23,7 @@ public class CRServer implements Server, Runnable {
     private int port;
     private ServerSocket socket;
     private boolean running;
+    private PingHeartbeat heartbeat;
 
     private final List<CRConnection> connections;
 
@@ -43,6 +46,9 @@ public class CRServer implements Server, Runnable {
 
     public void run() {
         running = true;
+
+        // Start heartbeat
+        heartbeat = new PingHeartbeat(this);
 
         while (running) {
             try {
@@ -76,8 +82,9 @@ public class CRServer implements Server, Runnable {
         socket = null;
     }
 
-    public void broadcast(PacketOut packetOut) {
-        // TODO: Broadcast
+    public void broadcast(PacketOut packet) throws IOException {
+        for (CRConnection con : connections)
+            con.sendPacket(packet);
     }
 
     public EventManager getEventManager() {
@@ -86,6 +93,22 @@ public class CRServer implements Server, Runnable {
 
     public int getPort() {
         return port;
+    }
+
+    public boolean isRunning() {
+        return running;
+    }
+
+    public Connection getConnection(UUID uuid) {
+        for (CRConnection con : connections)
+            if (con.getID().equals(uuid))
+                return con;
+
+        return null;
+    }
+
+    public List<Connection> getConnections() {
+        return new ArrayList<>(connections);
     }
 
     void removeConnection(CRConnection conn) {

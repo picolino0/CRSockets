@@ -31,4 +31,11 @@ public class ClientConnectEvent extends ClientEvent {
     public boolean isDisallowed() {
         return disallowReason != null;
     }
+
+    /**
+     * @return The reason the client was disallowed
+     */
+    public String getReason(){
+        return disallowReason;
+    }
 }
