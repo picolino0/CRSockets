@@ -1,9 +1,9 @@
 package nl.colinrosen.sockets.v1_0_0_0.server.packets.outgoing;
 
-import nl.colinrosen.sockets.api.server.packets.PacketStage;
-import nl.colinrosen.sockets.api.server.packets.outgoing.PacketEnum;
-import nl.colinrosen.sockets.api.server.packets.outgoing.PacketOut;
-import nl.colinrosen.sockets.api.server.packets.outgoing.TransientField;
+import nl.colinrosen.sockets.api.shared.packets.PacketStage;
+import nl.colinrosen.sockets.api.shared.packets.outgoing.PacketEnum;
+import nl.colinrosen.sockets.api.shared.packets.outgoing.PacketOut;
+import nl.colinrosen.sockets.api.shared.packets.outgoing.TransientField;
 
 /**
  * @author Colin Rosen
@@ -60,6 +60,6 @@ public class PacketOutHandShake00HandShake extends PacketOut {
         PLUS,
         MIN,
         MULTI,
-        DIV;
+        DIV
     }
 }

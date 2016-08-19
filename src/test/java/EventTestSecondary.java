@@ -1,9 +1,8 @@
 import events.SomeEvent;
-import nl.colinrosen.sockets.api.server.events.EventHandler;
-import nl.colinrosen.sockets.api.server.events.EventListener;
-import nl.colinrosen.sockets.api.server.events.EventPriority;
-import nl.colinrosen.sockets.api.server.events.IllegalEventListenerException;
-import org.junit.Assert;
+import nl.colinrosen.sockets.api.shared.events.EventHandler;
+import nl.colinrosen.sockets.api.shared.events.EventListener;
+import nl.colinrosen.sockets.api.shared.events.EventPriority;
+import nl.colinrosen.sockets.api.shared.events.IllegalEventListenerException;
 
 /**
  * @author Colin Rosen

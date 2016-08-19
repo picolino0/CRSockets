@@ -1,9 +1,8 @@
 package nl.colinrosen.sockets.api.server;
 
-import nl.colinrosen.sockets.api.server.packets.outgoing.PacketOut;
+import nl.colinrosen.sockets.api.shared.packets.outgoing.PacketOut;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.UUID;
 
@@ -19,7 +18,7 @@ public interface Connection {
     UUID getID();
 
     /**
-     * Whether the client is opened or not
+     * True if the handshake is complete and the client is still connected, false otherwise
      */
     boolean isConnected();
 

@@ -11,7 +11,7 @@ import java.util.List;
  */
 public abstract class ServerFactory {
     private static ServerFactory instance;
-    private static List<Server> servers = new ArrayList<>();
+    private final static List<Server> servers = new ArrayList<>();
 
     protected ServerFactory() {
         instance = this;
@@ -57,4 +57,14 @@ public abstract class ServerFactory {
      * @param port The port the server needs to bind to
      */
     public abstract Server newServer(int port);
+
+    /**
+     * Adds a server to the list, this method is protected,
+     * because it should only be called when a subclass creates a new server instance
+     *
+     * @param server The server to add
+     */
+    protected final void addServer(Server server) {
+        servers.add(server);
+    }
 }

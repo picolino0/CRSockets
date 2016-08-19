@@ -1,7 +1,7 @@
 package nl.colinrosen.sockets.api.server;
 
-import nl.colinrosen.sockets.api.server.events.EventManager;
-import nl.colinrosen.sockets.api.server.packets.outgoing.PacketOut;
+import nl.colinrosen.sockets.api.shared.events.EventBase;
+import nl.colinrosen.sockets.api.shared.packets.outgoing.PacketOut;
 
 import java.io.IOException;
 import java.net.SocketException;
@@ -11,7 +11,7 @@ import java.util.UUID;
 /**
  * @author Colin Rosen
  */
-public interface Server {
+public interface Server extends EventBase {
 
     /**
      * Start the server
@@ -39,11 +39,6 @@ public interface Server {
      * @param packet The packet to be sent
      */
     void broadcast(PacketOut packet) throws IOException;
-
-    /**
-     * Gets the EventManager associated with this server
-     */
-    EventManager getEventManager();
 
     /**
      * Gets the port the server is running on

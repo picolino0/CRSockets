@@ -1,8 +1,8 @@
 package nl.colinrosen.sockets.api.server.events.client;
 
 import nl.colinrosen.sockets.api.server.Connection;
-import nl.colinrosen.sockets.api.server.events.Event;
-import nl.colinrosen.sockets.api.server.events.HandlerList;
+import nl.colinrosen.sockets.api.shared.events.Event;
+import nl.colinrosen.sockets.api.shared.events.HandlerList;
 
 /**
  * @author Colin Rosen

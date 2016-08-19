@@ -19,8 +19,6 @@ public class PingHeartbeat implements Runnable {
     }
 
     public void run() {
-        PacketOutPing00Ping pingPack = new PacketOutPing00Ping();
-
         while (server.isRunning()) {
             for (Connection iconn : server.getConnections()) {
                 CRConnection conn = (CRConnection) iconn;
@@ -28,6 +26,7 @@ public class PingHeartbeat implements Runnable {
 
                 // Send ping to connection
                 try {
+                    PacketOutPing00Ping pingPack = new PacketOutPing00Ping(conn.getPing());
                     conn.sendPacket(pingPack);
                 } catch (IOException ex) {
                     // Connection closed

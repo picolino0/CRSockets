@@ -5,13 +5,11 @@ import nl.colinrosen.sockets.api.server.Server;
 import nl.colinrosen.sockets.api.server.events.client.ClientConnectEvent;
 import nl.colinrosen.sockets.api.server.events.client.ClientNotificationEvent;
 import nl.colinrosen.sockets.api.server.events.packets.PacketReceiveEvent;
-import nl.colinrosen.sockets.api.server.packets.PacketException;
-import nl.colinrosen.sockets.api.server.packets.PacketStage;
-import nl.colinrosen.sockets.api.server.packets.incoming.PacketIn;
-import nl.colinrosen.sockets.api.server.packets.outgoing.PacketEnum;
-import nl.colinrosen.sockets.api.server.packets.outgoing.PacketOut;
-import nl.colinrosen.sockets.api.server.packets.outgoing.TransientField;
-import nl.colinrosen.sockets.v1_0_0_0.server.packets.incoming.CRPacketIn;
+import nl.colinrosen.sockets.api.shared.packets.PacketException;
+import nl.colinrosen.sockets.api.shared.packets.PacketStage;
+import nl.colinrosen.sockets.api.shared.packets.incoming.PacketIn;
+import nl.colinrosen.sockets.api.shared.packets.outgoing.PacketOut;
+import nl.colinrosen.sockets.v1_0_0_0.shared.packets.CRPacketIn;
 import nl.colinrosen.sockets.v1_0_0_0.server.packets.incoming.PacketInConnectedXXNotification;
 import nl.colinrosen.sockets.v1_0_0_0.server.packets.incoming.PacketInHandShake00Response;
 import nl.colinrosen.sockets.v1_0_0_0.server.packets.outgoing.PacketOutAny00Disconnect;
@@ -23,13 +21,8 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import java.io.*;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -52,6 +45,7 @@ public class CRConnection implements Connection, Runnable {
         this.server = server;
         this.socket = socket;
 
+        ping = new ClientPing(this);
         id = UUID.randomUUID();
 
         try {
@@ -97,12 +91,6 @@ public class CRConnection implements Connection, Runnable {
                 break;
             }
         }
-
-        try {
-            close();
-        } catch (IOException ex) {
-            // Already closed
-        }
     }
 
     private void handlePacket(PacketIn packet) {
@@ -126,7 +114,7 @@ public class CRConnection implements Connection, Runnable {
                 ClientConnectEvent connEvt = new ClientConnectEvent(this);
                 server.getEventManager().callEvent(connEvt);
 
-                PacketOutHandshake01Response respOut = new PacketOutHandshake01Response(true, "Handshake completed");
+                PacketOutHandshake01Response respOut = new PacketOutHandshake01Response(true, id.toString());
 
                 // Set the result to failed, if one of the events disallowed the connection
                 if (connEvt.isDisallowed())
@@ -182,69 +170,8 @@ public class CRConnection implements Connection, Runnable {
     }
 
     public void sendPacket(PacketOut packet) throws IOException {
-        // Get all fields in the packet
-        Field[] publicFields = packet.getClass().getFields();
-        Field[] privateFields = packet.getClass().getDeclaredFields();
-
-        // Add all fields to a single hashset
-        Set<Field> fields = new HashSet<>(publicFields.length + privateFields.length, 1);
-        for (Field f : publicFields)
-            fields.add(f);
-        for (Field f : privateFields)
-            fields.add(f);
-
-        // Create json object for packet
-        JSONObject obj = new JSONObject();
-        obj.put("stage", packet.getStage().name());
-        obj.put("id", packet.getID());
-
-        // Compile fields in a json object
-        JSONObject args = new JSONObject();
-        for (Field f : fields) {
-            TransientField trans = f.getAnnotation(TransientField.class);
-            if (trans != null || f.isSynthetic())
-                // Ignore field if it is marked transient or if the field is synthetic
-                continue;
-
-            try {
-                f.setAccessible(true);
-                Object value = f.get(packet);
-
-                // Determine how to serialize an enum field
-                if (value != null && Enum.class.isAssignableFrom(f.getType())) {
-                    PacketEnum.ValueType type = PacketEnum.ValueType.NAME;
-                    String method = "";
-
-                    PacketEnum pe = f.getAnnotation(PacketEnum.class);
-                    if (pe != null) {
-                        type = pe.type();
-                        method = pe.method();
-                    }
-
-                    if (type == PacketEnum.ValueType.NAME)
-                        value = ((Enum) value).name();
-                    if (type == PacketEnum.ValueType.ORDINAL)
-                        value = ((Enum) value).ordinal();
-                    if (type == PacketEnum.ValueType.METHOD_VAL) {
-                        try {
-                            value = value.getClass().getMethod(method).invoke(value);
-                        } catch (NoSuchMethodException | InvocationTargetException ex) {
-                            // Reset value if method didn't exist
-                            value = f.get(packet);
-                        }
-                    }
-                }
-
-                args.put(f.getName(), value);
-            } catch (IllegalAccessException ex) {
-                // Ignore
-            }
-        }
-
-        obj.put("args", args);
-
         // Send json object to connection
-        sendRaw(obj.toJSONString());
+        sendRaw(packet.serialize().toJSONString());
     }
 
     public void sendNotification(String notification) throws IOException {
@@ -258,6 +185,7 @@ public class CRConnection implements Connection, Runnable {
             return;
 
         closed = true;
+        connected = false;
         server.removeConnection(this);
         socket.close();
     }

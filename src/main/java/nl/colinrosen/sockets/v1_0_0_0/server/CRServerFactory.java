@@ -8,6 +8,8 @@ import nl.colinrosen.sockets.api.server.ServerFactory;
  */
 public class CRServerFactory extends ServerFactory {
     public Server newServer(int port) {
-        return new CRServer(port);
+        CRServer srv = new CRServer(port);
+        addServer(srv);
+        return srv;
     }
 }

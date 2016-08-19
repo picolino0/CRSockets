@@ -2,10 +2,10 @@ package nl.colinrosen.sockets.v1_0_0_0.server;
 
 import nl.colinrosen.sockets.api.server.Connection;
 import nl.colinrosen.sockets.api.server.Server;
-import nl.colinrosen.sockets.api.server.events.EventManager;
-import nl.colinrosen.sockets.api.server.packets.outgoing.PacketOut;
-import nl.colinrosen.sockets.v1_0_0_0.server.events.CREventManager;
-import nl.colinrosen.sockets.v1_0_0_0.server.events.CRHandlerList;
+import nl.colinrosen.sockets.api.shared.events.EventManager;
+import nl.colinrosen.sockets.api.shared.packets.outgoing.PacketOut;
+import nl.colinrosen.sockets.v1_0_0_0.shared.events.CREventManager;
+import nl.colinrosen.sockets.v1_0_0_0.shared.events.CRHandlerList;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -27,7 +27,7 @@ public class CRServer implements Server, Runnable {
 
     private final List<CRConnection> connections;
 
-    public CRServer(int port) {
+    CRServer(int port) {
         this.port = port;
         eventmanager = new CREventManager(this);
         connections = new ArrayList<>();
@@ -35,13 +35,12 @@ public class CRServer implements Server, Runnable {
 
     public void start() throws IOException {
         // Ignore if the server has already started
-        if (socket == null || socket.isBound() || !socket.isClosed())
+        if (running)
             return;
 
         // Start server
         socket = new ServerSocket(port);
-        Thread th = new Thread(this);
-        th.start();
+        new Thread(this).start();
     }
 
     public void run() {
