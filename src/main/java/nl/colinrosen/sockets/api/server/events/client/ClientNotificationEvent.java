@@ -10,15 +10,30 @@ import org.json.simple.JSONObject;
  *         </p>
  */
 public class ClientNotificationEvent extends ClientEvent {
+    private String notification;
     private JSONObject response;
 
-    public ClientNotificationEvent(Connection client, JSONObject response) {
+    public ClientNotificationEvent(Connection client, String notification, JSONObject response) {
         super(client);
 
+        this.notification = notification;
         this.response = response;
     }
 
+    /**
+     * The response the client returned after receiving {@link #notification}
+     *
+     * @return
+     */
     public JSONObject getResponse() {
         return response;
     }
+
+    /**
+     * The notification that was sent to the client that triggered the client to send the response
+     */
+    public String getNotification() {
+        return notification;
+    }
+
 }
