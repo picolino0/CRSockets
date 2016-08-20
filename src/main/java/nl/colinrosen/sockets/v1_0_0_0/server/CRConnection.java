@@ -89,13 +89,16 @@ public class CRConnection implements Connection, Runnable {
                     if (!connected)
                         close();
 
+                    if (ServerFactory.isShowingErrors())
+                        System.err.println("Received: " + line);
+
                     // Message not formatted as json string. Ignore
                     System.err.print("Invalid packet received!");
                     if (ServerFactory.isDebug())
                         System.err.print(" (Server)");
                     System.err.println();
 
-                    if (ServerFactory.isDebug()) {
+                    if (ServerFactory.isShowingErrors()) {
                         System.err.println("Received: " + line);
                         ex.printStackTrace();
                     }
@@ -107,14 +110,21 @@ public class CRConnection implements Connection, Runnable {
     }
 
     private void handlePacket(PacketIn packet) {
-        if (packet.getStage() != PacketStage.HANDSHAKE && !connected){
-            // In handshake stage. The client must first do the handshake, before we accept any other packets
-            try {
-                close();
-            } catch (IOException ex) {
-                // Already closed...
+        if (server.doCustomHandshake()) {
+            //region check in handshake stage
+            if (packet.getStage() != PacketStage.HANDSHAKE && !connected) {
+                // In handshake stage. The client must first do the handshake, before we accept any other packets
+                if (ServerFactory.isShowingErrors())
+                    System.err.println("Received a non-handshake packet in handshake stage!\nReceived packet #" + packet.getID() + " for stage " + packet.getStage());
+
+                try {
+                    close();
+                } catch (IOException ex) {
+                    // Already closed...
+                }
+                return;
             }
-            return;
+            //endregion
         }
 
         // Handle ping packet
@@ -124,44 +134,49 @@ public class CRConnection implements Connection, Runnable {
         }
 
         // Ignore if wrong stage
-        if ((packet.getStage() == PacketStage.HANDSHAKE && connected) || (packet.getStage() == PacketStage.CONNECTED && !connected))
+        if (server.doCustomHandshake() && ((packet.getStage() == PacketStage.HANDSHAKE && connected) || (packet.getStage() == PacketStage.CONNECTED && !connected)))
             return;
 
-        //region Handle handshake response
-        if (packet.getStage() == PacketStage.HANDSHAKE && packet.getID() == 0) {
-            PacketInHandShake00Response resp = new PacketInHandShake00Response(packet.getArgs());
-            if (resp.getResult() == handshakeResult) {
-                connected = true;
+        if (server.doCustomHandshake()) {
+            //region Handle handshake response
+            if (packet.getStage() == PacketStage.HANDSHAKE && packet.getID() == 0) {
+                PacketInHandShake00Response resp = new PacketInHandShake00Response(packet.getArgs());
+                if (resp.getResult() == handshakeResult) {
+                    connected = true;
 
-                // Call connect event
-                ClientConnectEvent connEvt = new ClientConnectEvent(this);
-                server.getEventManager().callEvent(connEvt);
+                    if (ServerFactory.isDebug())
+                        System.out.println("[DEBUG] Handshake completed for client " + id);
 
-                PacketOutHandshake01Response respOut = new PacketOutHandshake01Response(true, id.toString());
+                    // Call connect event
+                    ClientConnectEvent connEvt = new ClientConnectEvent(this);
+                    server.getEventManager().callEvent(connEvt);
 
-                // Set the result to failed, if one of the events disallowed the connection
-                if (connEvt.isDisallowed())
-                    respOut = new PacketOutHandshake01Response(false, connEvt.getReason());
+                    PacketOutHandshake01Response respOut = new PacketOutHandshake01Response(true, id.toString());
+
+                    // Set the result to failed, if one of the events disallowed the connection
+                    if (connEvt.isDisallowed())
+                        respOut = new PacketOutHandshake01Response(false, connEvt.getReason());
+                    try {
+                        sendPacket(respOut);
+                    } catch (IOException ex) {
+                        // Connection closed..
+                    }
+                    return;
+                }
+
+                // Close connection when an invalid handshake response was sent
                 try {
+                    PacketOutHandshake01Response respOut = new PacketOutHandshake01Response(false, "Invalid handshake response");
                     sendPacket(respOut);
+
+                    close();
                 } catch (IOException ex) {
-                    // Connection closed..
+                    // Already closed..
                 }
                 return;
             }
-
-            // Close connection when an invalid handshake response was sent
-            try {
-                PacketOutHandshake01Response respOut = new PacketOutHandshake01Response(false, "Invalid handshake response");
-                sendPacket(respOut);
-
-                close();
-            } catch (IOException ex) {
-                // Already closed..
-            }
-            return;
+            //endregion
         }
-        //endregion
 
         //region Handle notification response
         if (packet.getStage() == PacketStage.CONNECTED && packet.getID() == -1) {
@@ -185,6 +200,13 @@ public class CRConnection implements Connection, Runnable {
 
     public boolean isConnected() {
         return connected;
+    }
+
+    public void setConnected(boolean connected) {
+        if (!server.doCustomHandshake())
+            throw new IllegalAccessError("Custom handshake is not enabled");
+
+        this.connected = connected;
     }
 
     public void sendRaw(String message) throws IOException {
@@ -211,6 +233,9 @@ public class CRConnection implements Connection, Runnable {
         connected = false;
         server.removeConnection(this);
         socket.close();
+
+        if (ServerFactory.isDebug())
+            System.out.println("[DEBUG] Closed client");
     }
 
     public void close(String reason) throws IOException {

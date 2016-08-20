@@ -2,6 +2,7 @@ package nl.colinrosen.sockets.v1_0_0_0.server;
 
 import nl.colinrosen.sockets.api.server.Connection;
 import nl.colinrosen.sockets.api.server.Server;
+import nl.colinrosen.sockets.api.server.ServerFactory;
 import nl.colinrosen.sockets.api.shared.events.EventManager;
 import nl.colinrosen.sockets.api.shared.packets.outgoing.PacketOut;
 import nl.colinrosen.sockets.v1_0_0_0.server.packets.outgoing.PacketOutAny00Disconnect;
@@ -23,7 +24,7 @@ public class CRServer implements Server, Runnable {
     private CREventManager eventmanager;
     private int port;
     private ServerSocket socket;
-    private boolean running;
+    private boolean customHandshake, running;
     private PingHeartbeat heartbeat;
 
     private final List<CRConnection> connections;
@@ -34,10 +35,19 @@ public class CRServer implements Server, Runnable {
         connections = new ArrayList<>();
     }
 
+    CRServer(int port, boolean customHandshake) {
+        this(port);
+
+        this.customHandshake = customHandshake;
+    }
+
     public void start() throws IOException {
         // Ignore if the server has already started
         if (running)
             return;
+
+        if (ServerFactory.isDebug())
+            System.out.println("[DEBUG] Starting server...");
 
         // Start server
         socket = new ServerSocket(port);
@@ -47,12 +57,19 @@ public class CRServer implements Server, Runnable {
     public void run() {
         running = true;
 
+        if (ServerFactory.isDebug())
+            System.out.println("[DEBUG] Server is running");
+
         // Start heartbeat
         heartbeat = new PingHeartbeat(this);
 
         while (running) {
             try {
                 Socket sock = socket.accept();
+
+                if (ServerFactory.isDebug())
+                    System.out.println("[DEBUG] Client connected (" + sock.getRemoteSocketAddress() + ")");
+
                 connections.add(new CRConnection(this, sock));
             } catch (IOException ex) {
                 break;
@@ -69,6 +86,9 @@ public class CRServer implements Server, Runnable {
 
         // Close connections
         synchronized (connections) {
+            if (ServerFactory.isDebug() && connections.size() > 0)
+                System.out.println("[DEBUG] Closing clients");
+
             List<CRConnection> temp = new ArrayList(connections);
             for (CRConnection con : temp)
                 con.close("Server closed");
@@ -81,6 +101,9 @@ public class CRServer implements Server, Runnable {
 
         socket.close();
         socket = null;
+
+        if (ServerFactory.isDebug())
+            System.out.println("[DEBUG] Server closed");
     }
 
     public void close(String reason) throws IOException {
@@ -90,6 +113,9 @@ public class CRServer implements Server, Runnable {
 
         // Close connections with given reason
         synchronized (connections) {
+            if (ServerFactory.isDebug())
+                System.out.println("[DEBUG] Closing clients");
+
             List<CRConnection> temp = new ArrayList(connections);
             for (CRConnection con : temp)
                 con.close(reason);
@@ -131,6 +157,10 @@ public class CRServer implements Server, Runnable {
 
     public List<Connection> getConnections() {
         return new ArrayList<>(connections);
+    }
+
+    public boolean doCustomHandshake(){
+        return customHandshake;
     }
 
     void removeConnection(CRConnection conn) {

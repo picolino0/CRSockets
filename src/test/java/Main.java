@@ -25,7 +25,9 @@ public class Main {
     @BeforeClass
     public static void prepare() {
         ServerFactory.doDebug(true);
+        ServerFactory.doShowErrors(true);
         ClientFactory.doDebug(true);
+        ClientFactory.doShowErrors(true);
 
         serv = ServerFactory.newServerInstance(2585);
 

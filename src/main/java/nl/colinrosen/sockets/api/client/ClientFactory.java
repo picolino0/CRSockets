@@ -14,7 +14,7 @@ import java.util.List;
 public abstract class ClientFactory {
     private static ClientFactory instance;
     protected final static List<Client> clients = new ArrayList<>();
-    private static boolean debug = false;
+    private static boolean debug = false, showErrors = false;
 
     protected ClientFactory() {
         instance = this;
@@ -86,5 +86,19 @@ public abstract class ClientFactory {
      */
     public static void doDebug(boolean debug){
         ClientFactory.debug = debug;
+    }
+
+    /**
+     * @return If details about certain errors should be printed
+     */
+    public static boolean isShowingErrors() {
+        return showErrors;
+    }
+
+    /**
+     * @param show If details about certain errors should be printed
+     */
+    public static void doShowErrors(boolean show) {
+        showErrors = show;
     }
 }

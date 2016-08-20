@@ -23,6 +23,14 @@ public interface Connection {
     boolean isConnected();
 
     /**
+     * When a custom handshake is enabled. You can set the connected state of the connection
+     *
+     * @param connected
+     * @throws IllegalAccessError When the method is called, while a custom handshake is not enabled
+     */
+    void setConnected(boolean connected);
+
+    /**
      * Sends a packet to the client
      *
      * @param pack The packet to send

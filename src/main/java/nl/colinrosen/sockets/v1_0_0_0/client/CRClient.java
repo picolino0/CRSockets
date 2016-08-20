@@ -6,6 +6,8 @@ import nl.colinrosen.sockets.api.client.events.ConnectionEvent;
 import nl.colinrosen.sockets.api.client.events.KickedEvent;
 import nl.colinrosen.sockets.api.client.events.NotificationEvent;
 import nl.colinrosen.sockets.api.client.events.PacketReceiveEvent;
+import nl.colinrosen.sockets.api.server.Server;
+import nl.colinrosen.sockets.api.server.ServerFactory;
 import nl.colinrosen.sockets.api.shared.events.EventManager;
 import nl.colinrosen.sockets.api.shared.packets.PacketException;
 import nl.colinrosen.sockets.api.shared.packets.PacketStage;
@@ -50,6 +52,9 @@ public class CRClient implements Client, Runnable {
         if (running)
             return;
 
+        if (ClientFactory.isDebug())
+            System.out.println("[DEBUG] Starting client..");
+
         socket = new Socket(address, port);
 
         in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -61,6 +66,9 @@ public class CRClient implements Client, Runnable {
 
     public void run() {
         running = true;
+
+        if (ClientFactory.isDebug())
+            System.out.println("[DEBUG] Client is running");
 
         while (running) {
             try {
@@ -82,7 +90,7 @@ public class CRClient implements Client, Runnable {
                         System.err.print(" (Client)");
                     System.err.println();
 
-                    if (ClientFactory.isDebug()) {
+                    if (ClientFactory.isShowingErrors()) {
                         System.err.println("Received: " + line);
                         ex.printStackTrace();
                     }
@@ -187,6 +195,9 @@ public class CRClient implements Client, Runnable {
 
         socket.close();
         socket = null;
+
+        if (ClientFactory.isDebug())
+            System.out.println("[DEBUG] Client closed");
     }
 
     public void sendRaw(String message) throws IOException {

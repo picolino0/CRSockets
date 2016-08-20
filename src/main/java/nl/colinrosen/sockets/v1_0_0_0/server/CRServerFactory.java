@@ -12,4 +12,10 @@ public class CRServerFactory extends ServerFactory {
         addServer(srv);
         return srv;
     }
+
+    public Server newServer(int port, boolean customHandshake){
+        CRServer srv = new CRServer(port, customHandshake);
+        addServer(srv);
+        return srv;
+    }
 }
