@@ -1,4 +1,7 @@
+package events;
+
 import events.AnotherEvent;
+import events.SeparateEvent;
 import events.SomeEvent;
 import nl.colinrosen.sockets.api.shared.events.EventHandler;
 import nl.colinrosen.sockets.api.shared.events.EventListener;
@@ -8,7 +11,7 @@ import nl.colinrosen.sockets.api.shared.events.IllegalEventListenerException;
 /**
  * @author Colin Rosen
  */
-public class EventTest implements EventListener {
+public class EventHandleTest implements EventListener {
     @EventHandler(priority = EventPriority.LOWEST)
     public void handlePublic(SomeEvent evt) {
         System.out.println("[1]" + evt.getMessage());
@@ -47,5 +50,11 @@ public class EventTest implements EventListener {
         System.out.println("SECOND EVENT: " + evt.getMessage() + " - " + evt.getNr());
 
         evt.setCalled();
+    }
+
+    @EventHandler
+    private void handleSeparateEvent(SeparateEvent evt){
+        evt.call();
+        System.out.println(evt.getMessage());
     }
 }

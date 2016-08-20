@@ -34,11 +34,30 @@ public interface Server extends EventBase {
     void close() throws IOException;
 
     /**
+     * Closes the server and all connections, but sends a disconnect packet with the given <code>String reason</code> first
+     * <p>
+     * * Any thread currently blocked in the sockets accept method will throw
+     * a {@link SocketException}.
+     *
+     * @param reason The reason for disconnecting
+     * @throws IOException if an I/O error occurs when closing the socket
+     */
+    void close(String reason) throws IOException;
+
+    /**
      * Sends a packet to all clients
      *
      * @param packet The packet to be sent
      */
     void broadcast(PacketOut packet) throws IOException;
+
+    /**
+     * Sends a notification to all connected clients
+     *
+     * @param notification The notification to send
+     * @throws IOException if an I/O error occurs when sending a message
+     */
+    void broadcastNotification(String notification) throws IOException;
 
     /**
      * Gets the port the server is running on

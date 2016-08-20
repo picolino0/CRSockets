@@ -2,6 +2,7 @@ package nl.colinrosen.sockets.v1_0_0_0.server;
 
 import nl.colinrosen.sockets.api.server.Connection;
 import nl.colinrosen.sockets.api.server.Server;
+import nl.colinrosen.sockets.api.server.ServerFactory;
 import nl.colinrosen.sockets.api.server.events.client.ClientConnectEvent;
 import nl.colinrosen.sockets.api.server.events.client.ClientNotificationEvent;
 import nl.colinrosen.sockets.api.server.events.packets.PacketReceiveEvent;
@@ -79,13 +80,21 @@ public class CRConnection implements Connection, Runnable {
                 JSONParser parser = new JSONParser();
                 try {
                     JSONObject obj = (JSONObject) parser.parse(line);
-                    if (!obj.containsKey("id") || !obj.containsKey("stage") || !obj.containsKey("args") || !(obj.get("id") instanceof Integer) || PacketStage.fromString(obj.get("stage").toString()) == null)
+                    if (!obj.containsKey("id") || !obj.containsKey("stage") || !obj.containsKey("args") || !(obj.get("id") instanceof Long) || PacketStage.fromString(obj.get("stage").toString()) == null)
                         throw new PacketException(obj, "Missing or invalid arguments");
 
-                    handlePacket(new CRPacketIn(PacketStage.fromString(obj.get("stage").toString()), (int) obj.get("id"), (JSONObject) obj.get("args")));
+                    handlePacket(new CRPacketIn(PacketStage.fromString(obj.get("stage").toString()), (long) obj.get("id"), (JSONObject) obj.get("args")));
                 } catch (ParseException | PacketException ex) {
                     // Message not formatted as json string. Ignore
-                    System.err.println("Invalid packet received!");
+                    System.err.print("Invalid packet received!");
+                    if (ServerFactory.isDebug())
+                        System.err.print(" (Server)");
+                    System.err.println();
+
+                    if (ServerFactory.isDebug()) {
+                        System.err.println("Received: " + line);
+                        ex.printStackTrace();
+                    }
                 }
             } catch (IOException ex) {
                 break;
@@ -106,7 +115,7 @@ public class CRConnection implements Connection, Runnable {
 
         //region Handle handshake response
         if (packet.getStage() == PacketStage.HANDSHAKE && packet.getID() == 0) {
-            PacketInHandShake00Response resp = new PacketInHandShake00Response((JSONObject) packet.getArgs().get("args"));
+            PacketInHandShake00Response resp = new PacketInHandShake00Response(packet.getArgs());
             if (resp.getResult() == handshakeResult) {
                 connected = true;
 
@@ -142,7 +151,7 @@ public class CRConnection implements Connection, Runnable {
 
         //region Handle notification response
         if (packet.getStage() == PacketStage.CONNECTED && packet.getID() == -1) {
-            PacketInConnectedXXNotification not = new PacketInConnectedXXNotification((JSONObject) packet.getArgs().get("args"));
+            PacketInConnectedXXNotification not = new PacketInConnectedXXNotification(packet.getArgs());
 
             // Call notification event
             ClientNotificationEvent notEvt = new ClientNotificationEvent(this, not.getNotification(), not.getResponse());

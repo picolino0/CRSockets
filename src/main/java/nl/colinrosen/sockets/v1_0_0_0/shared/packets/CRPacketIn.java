@@ -9,7 +9,7 @@ import org.json.simple.JSONObject;
  */
 public class CRPacketIn extends PacketIn {
 
-    public CRPacketIn(PacketStage stage, int id, JSONObject args) {
+    public CRPacketIn(PacketStage stage, long id, JSONObject args) {
         super(stage, id, args);
     }
 }

@@ -13,6 +13,7 @@ public class ClientPing {
 
     public ClientPing(CRConnection conn) {
         this.conn = conn;
+        prevTime = System.currentTimeMillis();
     }
 
     public int getPing() {
@@ -21,11 +22,11 @@ public class ClientPing {
 
     public void updateTimePassed() {
         // Update timepassed and previous time
-        timepassed += System.nanoTime() - prevTime;
+        timepassed += System.currentTimeMillis() - prevTime;
         prevTime = System.currentTimeMillis();
 
         // If more time has passed than is allowed, close the connection
-        if (timepassed / 1000000 >= conn.getTimeout()) {
+        if (timepassed >= conn.getTimeout()) {
             try {
                 conn.close("Timed out");
             } catch (IOException ex) {
@@ -35,9 +36,9 @@ public class ClientPing {
     }
 
     public void refresh() {
-        ping = (int) (timepassed / 1000000);
+        ping = (int) timepassed;
 
         timepassed = 0;
-        prevTime = System.nanoTime();
+        prevTime = System.currentTimeMillis();
     }
 }

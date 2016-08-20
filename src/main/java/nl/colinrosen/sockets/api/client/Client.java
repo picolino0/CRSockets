@@ -50,6 +50,11 @@ public interface Client extends EventBase {
     boolean isConnected();
 
     /**
+     * @return if the socket is running
+     */
+    boolean isRunning();
+
+    /**
      * Gets the ping. The amount of time it takes to send a packet from the server to the client and back
      */
     int getPing();

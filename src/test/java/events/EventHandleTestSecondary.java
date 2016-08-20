@@ -1,3 +1,5 @@
+package events;
+
 import events.SomeEvent;
 import nl.colinrosen.sockets.api.shared.events.EventHandler;
 import nl.colinrosen.sockets.api.shared.events.EventListener;
@@ -7,7 +9,7 @@ import nl.colinrosen.sockets.api.shared.events.IllegalEventListenerException;
 /**
  * @author Colin Rosen
  */
-public class EventTestSecondary implements EventListener {
+public class EventHandleTestSecondary implements EventListener {
 
     @EventHandler
     private void handle(SomeEvent evt) {

@@ -1,6 +1,7 @@
 package nl.colinrosen.sockets.v1_0_0_0.client;
 
 import nl.colinrosen.sockets.api.client.Client;
+import nl.colinrosen.sockets.api.client.ClientFactory;
 import nl.colinrosen.sockets.api.client.events.ConnectionEvent;
 import nl.colinrosen.sockets.api.client.events.KickedEvent;
 import nl.colinrosen.sockets.api.client.events.NotificationEvent;
@@ -70,13 +71,21 @@ public class CRClient implements Client, Runnable {
                 JSONParser parser = new JSONParser();
                 try {
                     JSONObject obj = (JSONObject) parser.parse(line);
-                    if (!obj.containsKey("id") || !obj.containsKey("stage") || !obj.containsKey("args") || !(obj.get("id") instanceof Integer) || PacketStage.fromString(obj.get("stage").toString()) == null)
+                    if (!obj.containsKey("id") || !obj.containsKey("stage") || !obj.containsKey("args") || !(obj.get("id") instanceof Long) || PacketStage.fromString(obj.get("stage").toString()) == null)
                         throw new PacketException(obj, "Missing or invalid arguments");
 
-                    handlePacket(new CRPacketIn(PacketStage.fromString(obj.get("stage").toString()), (int) obj.get("id"), (JSONObject) obj.get("args")));
+                    handlePacket(new CRPacketIn(PacketStage.fromString(obj.get("stage").toString()), (long) obj.get("id"), (JSONObject) obj.get("args")));
                 } catch (ParseException | PacketException ex) {
                     // Message not formatted as json string. Ignore
-                    System.err.println("Invalid packet received!");
+                    System.err.print("Invalid packet received!");
+                    if (ClientFactory.isDebug())
+                        System.err.print(" (Client)");
+                    System.err.println();
+
+                    if (ClientFactory.isDebug()) {
+                        System.err.println("Received: " + line);
+                        ex.printStackTrace();
+                    }
                 }
             } catch (IOException ex) {
                 break;
@@ -204,6 +213,10 @@ public class CRClient implements Client, Runnable {
 
     public boolean isConnected() {
         return connected;
+    }
+
+    public boolean isRunning() {
+        return running;
     }
 
     public int getPing() {

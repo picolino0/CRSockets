@@ -12,6 +12,7 @@ import java.util.List;
 public abstract class ServerFactory {
     private static ServerFactory instance;
     private final static List<Server> servers = new ArrayList<>();
+    private static boolean debug = false;
 
     protected ServerFactory() {
         instance = this;
@@ -66,5 +67,20 @@ public abstract class ServerFactory {
      */
     protected final void addServer(Server server) {
         servers.add(server);
+    }
+
+    /**
+     * @return if debug messages should be printed
+     */
+    public static boolean isDebug() {
+        return debug;
+    }
+
+    /**
+     * Whether or not debug message should be printed
+     * @param debug
+     */
+    public static void doDebug(boolean debug){
+        ServerFactory.debug = debug;
     }
 }

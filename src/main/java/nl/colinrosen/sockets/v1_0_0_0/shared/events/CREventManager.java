@@ -21,6 +21,13 @@ public class CREventManager implements EventManager {
 
     public void callEvent(Event event) {
         HandlerList handlers = event.getHandlers();
+
+        // If handlers is not set, we can be sure that no listeners have been set
+        // (as it sets the value to a new handlerlist everytime a listener is registered and this variable is null)
+        // Or someone has manually set this variable to null. in which case, also ignore the event..
+        if (handlers == null)
+            return;
+
         for (RegisteredListener list : handlers.getHandlers())
             list.execute(base, event);
     }

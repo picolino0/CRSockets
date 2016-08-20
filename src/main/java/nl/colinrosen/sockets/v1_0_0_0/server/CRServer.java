@@ -4,6 +4,7 @@ import nl.colinrosen.sockets.api.server.Connection;
 import nl.colinrosen.sockets.api.server.Server;
 import nl.colinrosen.sockets.api.shared.events.EventManager;
 import nl.colinrosen.sockets.api.shared.packets.outgoing.PacketOut;
+import nl.colinrosen.sockets.v1_0_0_0.server.packets.outgoing.PacketOutAny00Disconnect;
 import nl.colinrosen.sockets.v1_0_0_0.shared.events.CREventManager;
 import nl.colinrosen.sockets.v1_0_0_0.shared.events.CRHandlerList;
 
@@ -68,7 +69,8 @@ public class CRServer implements Server, Runnable {
 
         // Close connections
         synchronized (connections) {
-            for (CRConnection con : connections)
+            List<CRConnection> temp = new ArrayList(connections);
+            for (CRConnection con : temp)
                 con.close("Server closed");
 
             connections.clear();
@@ -81,9 +83,30 @@ public class CRServer implements Server, Runnable {
         socket = null;
     }
 
+    public void close(String reason) throws IOException {
+        // Ignore if the server hasn't started yet
+        if (!running)
+            return;
+
+        // Close connections with given reason
+        synchronized (connections) {
+            List<CRConnection> temp = new ArrayList(connections);
+            for (CRConnection con : temp)
+                con.close(reason);
+        }
+
+        // Close the server
+        close();
+    }
+
     public void broadcast(PacketOut packet) throws IOException {
         for (CRConnection con : connections)
             con.sendPacket(packet);
+    }
+
+    public void broadcastNotification(String notification) throws IOException {
+        for (CRConnection conn : connections)
+            conn.sendNotification(notification);
     }
 
     public EventManager getEventManager() {

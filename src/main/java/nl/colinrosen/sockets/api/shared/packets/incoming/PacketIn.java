@@ -9,10 +9,10 @@ import org.json.simple.JSONObject;
 public abstract class PacketIn {
 
     private PacketStage stage;
-    private int id;
+    private long id;
     private JSONObject args;
 
-    public PacketIn(PacketStage stage, int id, JSONObject args) {
+    public PacketIn(PacketStage stage, long id, JSONObject args) {
         this.stage = stage;
         this.id = id;
         this.args = args;
@@ -22,7 +22,7 @@ public abstract class PacketIn {
         return stage;
     }
 
-    public final int getID() {
+    public final long getID() {
         return id;
     }
 

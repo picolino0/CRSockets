@@ -14,6 +14,7 @@ import java.util.List;
 public abstract class ClientFactory {
     private static ClientFactory instance;
     protected final static List<Client> clients = new ArrayList<>();
+    private static boolean debug = false;
 
     protected ClientFactory() {
         instance = this;
@@ -70,5 +71,20 @@ public abstract class ClientFactory {
      */
     protected final void addClient(Client client) {
         clients.add(client);
+    }
+
+    /**
+     * @return if debug messages should be printed
+     */
+    public static boolean isDebug() {
+        return debug;
+    }
+
+    /**
+     * Whether or not debug message should be printed
+     * @param debug
+     */
+    public static void doDebug(boolean debug){
+        ClientFactory.debug = debug;
     }
 }

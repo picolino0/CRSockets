@@ -1,5 +1,6 @@
-import events.AnotherEvent;
-import events.SomeEvent;
+import connection.DummyPacket;
+import connection.Events;
+import events.*;
 import nl.colinrosen.sockets.api.client.Client;
 import nl.colinrosen.sockets.api.client.ClientFactory;
 import nl.colinrosen.sockets.api.server.Server;
@@ -11,6 +12,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.net.UnknownHostException;
 
 import static org.junit.Assert.fail;
@@ -24,6 +27,9 @@ public class Main {
 
     @BeforeClass
     public static void prepare() {
+        ServerFactory.doDebug(true);
+        ClientFactory.doDebug(true);
+
         serv = ServerFactory.newServerInstance(2585);
 
         try {
@@ -49,11 +55,11 @@ public class Main {
         EventManager manager2 = client.getEventManager();
 
         // Register listeners
-        manager.registerListener(new EventTest());
-        manager.registerListener(new EventTestSecondary());
+        manager.registerListener(new EventHandleTest());
+        manager.registerListener(new EventHandleTestSecondary());
 
         // Register listener for client event manager too
-        manager2.registerListener(new EventTest());
+        manager2.registerListener(new EventHandleTest());
 
         // Call first event and check if it is executed in the right order
         manager.callEvent(new SomeEvent("First event"));
@@ -63,17 +69,41 @@ public class Main {
         AnotherEvent evt = new AnotherEvent("Second event", 42);
         manager.callEvent(evt);
         System.out.println();
-        System.out.println();
 
         // Check if the new method was called in addition to the other methods (because AnotherEvent is a subclass of SomeEvent)
         Assert.assertTrue(evt.wasCalled());
         Assert.assertEquals(5, evt.getCalled());
 
         // Call event for client
-        evt = new AnotherEvent("Client event", 123);
-        manager2.callEvent(evt);
+        SeparateEvent evt2 = new SeparateEvent("Client event");
+        manager2.callEvent(evt2);
 
-        Assert.assertTrue(evt.wasCalled());
-        Assert.assertEquals(5, evt.getCalled());
+        Assert.assertEquals(1, evt2.getCallCount());
+    }
+
+    @Test
+    public void connectionTest() throws IOException {
+        Events ev = new Events(serv, client);
+
+        serv.start();
+        serv.getEventManager().registerListener(ev);
+
+        client.start();
+        client.getEventManager().registerListener(ev);
+
+        // Wait till all events are handled
+        while (ev.isDoingStuff()) ;
+
+        // Wait a second for ping to update
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        int ping = serv.getConnections().get(0).getPing();
+        System.out.println("Ping: " + ping); // Probably 0, because the server and client are running on the same machine
+
+        serv.close("End of test");
     }
 }
