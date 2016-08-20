@@ -1,4 +1,3 @@
-import connection.DummyPacket;
 import connection.Events;
 import events.*;
 import nl.colinrosen.sockets.api.client.Client;
@@ -12,8 +11,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
 import java.net.UnknownHostException;
 
 import static org.junit.Assert.fail;
