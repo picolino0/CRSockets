@@ -85,6 +85,10 @@ public class CRConnection implements Connection, Runnable {
 
                     handlePacket(new CRPacketIn(PacketStage.fromString(obj.get("stage").toString()), (long) obj.get("id"), (JSONObject) obj.get("args")));
                 } catch (ParseException | PacketException ex) {
+                    // In handshake stage. The client must first do the handshake, before we accept any other packets
+                    if (!connected)
+                        close();
+
                     // Message not formatted as json string. Ignore
                     System.err.print("Invalid packet received!");
                     if (ServerFactory.isDebug())
@@ -103,6 +107,16 @@ public class CRConnection implements Connection, Runnable {
     }
 
     private void handlePacket(PacketIn packet) {
+        if (packet.getStage() != PacketStage.HANDSHAKE && !connected){
+            // In handshake stage. The client must first do the handshake, before we accept any other packets
+            try {
+                close();
+            } catch (IOException ex) {
+                // Already closed...
+            }
+            return;
+        }
+
         // Handle ping packet
         if (packet.getStage() == PacketStage.PING && packet.getID() == 0) {
             ping.refresh();
